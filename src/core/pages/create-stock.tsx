@@ -53,7 +53,7 @@ export default function CreateStock() {
   const [currency, setCurrency] = useState<{ id: number; currency_rate: string } | null>(null);
   const [currencyLoading, setCurrencyLoading] = useState(true);
   const [_calculatedSellingPrice, setCalculatedSellingPrice] = useState<string>('');
-  
+
   // Define stock fields with translations
   const stockFields = [
     {
@@ -74,7 +74,7 @@ export default function CreateStock() {
       searchTerm: productSearchTerm,
       onSearch: (value: string) => setProductSearchTerm(value),
     },
-     {
+    {
       name: 'quantity',
       label: t('common.quantity'),
       type: 'text',
@@ -88,7 +88,7 @@ export default function CreateStock() {
       placeholder: t('common.enter_purchase_price_usd'),
       required: true,
     },
-     {
+    {
       name: 'selling_price_us',
       label: t('common.enter_selling_price_usd') || 'Selling Price (USD)',
       type: 'text',
@@ -132,7 +132,7 @@ export default function CreateStock() {
       placeholder: t('common.enter_arrival_date'),
       required: true,
     },
-   
+
     {
       name: 'supplier_write',
       label: t('common.supplier'),
@@ -141,23 +141,23 @@ export default function CreateStock() {
       required: true,
       options: [], // Will be populated with suppliers
     },
-   
-  
+
+
   ];
   const createStock = useCreateStock();
-  
+
   // Create mutations
   const createProduct = useCreateProduct();
   const createSupplier = useCreateSupplier();
-  
+
   // State for create new modals
   const [createProductOpen, setCreateProductOpen] = useState(false);
   const [createSupplierOpen, setCreateSupplierOpen] = useState(false);
-  
+
   // Forms for creating new items
   const productForm = useForm<CreateProductForm>();
   const supplierForm = useForm<CreateSupplierForm>();
-  
+
   const form = useForm<FormValues>({
     defaultValues: {
       purchase_price_in_us: '',
@@ -175,7 +175,7 @@ export default function CreateStock() {
   const usdPrice = form.watch('purchase_price_in_us');
   // const exchangeRate = form.watch('exchange_rate');
   const exchangeRateValue = currency?.currency_rate || '';
-  
+
   // Fetch products, stores, measurements, suppliers and categories for the select dropdowns
   // const { data: productsData } = useGetProducts({
   //   params: {
@@ -193,7 +193,7 @@ export default function CreateStock() {
 
   const suppliers = Array.isArray(suppliersData) ? suppliersData : suppliersData?.results || [];
   const categories = Array.isArray(categoriesData) ? categoriesData : categoriesData?.results || [];
-  
+
   // Fetch all products from all API pages using new API
   useEffect(() => {
     const fetchProducts = async () => {
@@ -206,7 +206,7 @@ export default function CreateStock() {
   const handleCreateSupplier = () => {
     setCreateSupplierOpen(true);
   };
-  
+
 
 
   // Fetch currency rate on mount
@@ -236,7 +236,7 @@ export default function CreateStock() {
       const rate = parseFloat(exchangeRateValue);
       const quantityString = form.watch('quantity')?.toString() || '0';
       const quantity = parseFloat(quantityString);
-      
+
       if (!isNaN(priceInUSD) && !isNaN(rate)) {
         const calculatedPrice = priceInUSD * rate;
         form.setValue('purchase_price_in_uz', calculatedPrice.toString(), {
@@ -330,11 +330,11 @@ export default function CreateStock() {
       return {
         ...field,
         options: stores
-          .filter(store => store.is_main) // Only show non-main stores
-          .map(store => ({
-            value: store.id,
-            label: store.name
-          })),
+            .filter(store => store.is_main) // Only show non-main stores
+            .map(store => ({
+              value: store.id,
+              label: store.name
+            })),
         isLoading: storesLoading
       };
     }
@@ -491,100 +491,100 @@ export default function CreateStock() {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <ResourceForm<FormValues>
-        fields={fields}
-        onSubmit={handleSubmit}
-        isSubmitting={createStock.isPending}
-        title={t('common.create_new_stock')}
-        form={form}
-      />
+      <div className="container mx-auto py-8 px-4">
+        <ResourceForm<FormValues>
+            fields={fields}
+            onSubmit={handleSubmit}
+            isSubmitting={createStock.isPending}
+            title={t('common.create_new_stock')}
+            form={form}
+        />
 
-      {/* Create Product Modal */}
-      <Dialog open={createProductOpen} onOpenChange={setCreateProductOpen}>
-        <DialogContent>
-          <DialogTitle>{t('common.create_new_product')}</DialogTitle>
-          <form onSubmit={productForm.handleSubmit(handleCreateProductSubmit)} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="product_name">{t('common.product_name')}</Label>
-              <Input
-                id="product_name"
-                {...productForm.register('product_name', { required: true })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="category_write">{t('common.category')}</Label>
-              <Select
-                value={productForm.watch('category_write')?.toString()}
-                onValueChange={(value) => productForm.setValue('category_write', parseInt(value))}
-                disabled={categoriesLoading}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t('common.select_category')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem 
-                      key={String(category.id)} 
-                      value={String(category.id || '')}>
-                      {category.category_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="store_write">{t('common.store')}</Label>
-              <Select
-                value={productForm.watch('store_write')?.toString()}
-                onValueChange={(value) => productForm.setValue('store_write', parseInt(value))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t('common.select_store')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {stores.filter(store => !store.is_main).map((store) => (
-                    <SelectItem key={store.id?.toString() || ''} value={(store.id || 0).toString()}>
-                      {store.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <Button type="submit" disabled={createProduct.isPending}>
-              {t('common.create')}
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
+        {/* Create Product Modal */}
+        <Dialog open={createProductOpen} onOpenChange={setCreateProductOpen}>
+          <DialogContent>
+            <DialogTitle>{t('common.create_new_product')}</DialogTitle>
+            <form onSubmit={productForm.handleSubmit(handleCreateProductSubmit)} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="product_name">{t('common.product_name')}</Label>
+                <Input
+                    id="product_name"
+                    {...productForm.register('product_name', { required: true })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="category_write">{t('common.category')}</Label>
+                <Select
+                    value={productForm.watch('category_write')?.toString()}
+                    onValueChange={(value) => productForm.setValue('category_write', parseInt(value))}
+                    disabled={categoriesLoading}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('common.select_category')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                        <SelectItem
+                            key={String(category.id)}
+                            value={String(category.id || '')}>
+                          {category.category_name}
+                        </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="store_write">{t('common.store')}</Label>
+                <Select
+                    value={productForm.watch('store_write')?.toString()}
+                    onValueChange={(value) => productForm.setValue('store_write', parseInt(value))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('common.select_store')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {stores.filter(store => !store.is_main).map((store) => (
+                        <SelectItem key={store.id?.toString() || ''} value={(store.id || 0).toString()}>
+                          {store.name}
+                        </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button type="submit" disabled={createProduct.isPending}>
+                {t('common.create')}
+              </Button>
+            </form>
+          </DialogContent>
+        </Dialog>
 
-      {/* Create Supplier Modal */}
-      <Dialog open={createSupplierOpen} onOpenChange={setCreateSupplierOpen}>
-        <DialogContent>
-          <DialogTitle>{t('common.create_new_supplier')}</DialogTitle>
-          <form onSubmit={supplierForm.handleSubmit(handleCreateSupplierSubmit)} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">{t('common.supplier_name')}</Label>
-              <Input
-                id="name"
-                {...supplierForm.register('name', { required: true })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone_number">{t('common.phone_number')}</Label>
-              <Input
-                id="phone_number"
-                {...supplierForm.register('phone_number', { required: true })}
-              />
-            </div>
-            <Button type="submit" disabled={createSupplier.isPending}>
-              {t('common.create')}
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
+        {/* Create Supplier Modal */}
+        <Dialog open={createSupplierOpen} onOpenChange={setCreateSupplierOpen}>
+          <DialogContent>
+            <DialogTitle>{t('common.create_new_supplier')}</DialogTitle>
+            <form onSubmit={supplierForm.handleSubmit(handleCreateSupplierSubmit)} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">{t('common.supplier_name')}</Label>
+                <Input
+                    id="name"
+                    {...supplierForm.register('name', { required: true })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone_number">{t('common.phone_number')}</Label>
+                <Input
+                    id="phone_number"
+                    {...supplierForm.register('phone_number', { required: true })}
+                />
+              </div>
+              <Button type="submit" disabled={createSupplier.isPending}>
+                {t('common.create')}
+              </Button>
+            </form>
+          </DialogContent>
+        </Dialog>
 
 
-    </div>
+      </div>
   );
 }
